@@ -1,9 +1,11 @@
 package logs
 
 type Hook interface {
-	Formatter
+	Name() string
+	IsAsyncFire() bool
 	Levels() []Level
 	Fire(Element) error
+	OnError(error)
 }
 
 
