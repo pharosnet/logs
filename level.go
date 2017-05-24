@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	PanicLevel Level = iota
+	NoLevel Level = iota
+	PanicLevel
 	FatalLevel
 	ErrorLevel
 	WarnLevel
@@ -24,23 +25,30 @@ func (level Level) LTE(lvl Level) bool {
 	return false
 }
 
+func (level Level) IsNoLevel() bool {
+	if level == NoLevel {
+		return true
+	}
+	return false
+}
+
 func (level Level) Color() int {
 	var levelColor int
 	switch level {
 	case DebugLevel:
-		levelColor = gray
+		levelColor = 36
 	case InfoLevel:
-		levelColor = blue
+		levelColor = 34
 	case WarnLevel:
-		levelColor = yellow
+		levelColor = 33
 	case ErrorLevel:
-		levelColor = red
+		levelColor = 31
 	case FatalLevel:
-		levelColor = red
+		levelColor = 45
 	case PanicLevel:
-		levelColor = red
+		levelColor = 35
 	default:
-		levelColor = nocolor
+		levelColor = 0
 	}
 
 	return levelColor
@@ -49,39 +57,37 @@ func (level Level) Color() int {
 func (level Level) String() string {
 	switch level {
 	case DebugLevel:
-		return "debug"
+		return "DEBUG"
 	case InfoLevel:
-		return "info"
+		return "INFO"
 	case WarnLevel:
-		return "warning"
+		return "WARN"
 	case ErrorLevel:
-		return "error"
+		return "ERROR"
 	case FatalLevel:
-		return "fatal"
+		return "FATAL"
 	case PanicLevel:
-		return "panic"
+		return "PANIC"
 	}
-
-	return "unknown"
+	return "UNKNOWN"
 }
 
 func ParseLevel(lvl string) (Level, error) {
-	switch strings.ToLower(lvl) {
-	case "panic":
+	switch strings.ToUpper(lvl) {
+	case "PANIC":
 		return PanicLevel, nil
-	case "fatal":
+	case "FATAL":
 		return FatalLevel, nil
-	case "error":
+	case "ERROR":
 		return ErrorLevel, nil
-	case "warn", "warning":
+	case "WARN":
 		return WarnLevel, nil
-	case "info":
+	case "INFO":
 		return InfoLevel, nil
-	case "debug":
+	case "DEBUG":
 		return DebugLevel, nil
 	}
-	var l Level
-	return l, fmt.Errorf("not a valid logrus Level: %q", lvl)
+	return NoLevel, fmt.Errorf("not a valid Level: %q", lvl)
 }
 
 

@@ -1,17 +1,16 @@
 package logs
 
 import (
-	"os"
 	"sync"
-	"sync/atomic"
+	"bytes"
+	"os"
 )
 
-func New(lvl Level, w Writer) *logger {
+func New(out Writer) *logger {
 	log := new(logger)
 	log.mu = new(sync.Mutex)
 	log.x = uint64(0)
-	log.level = lvl
-	log.w = w
+	log.out = out
 	log.hooks = make(map[Level][]Hook)
 	return log
 }
@@ -19,100 +18,70 @@ func New(lvl Level, w Writer) *logger {
 type logger struct {
 	mu *sync.Mutex
 	x uint64
-	level Level
-	w Writer
+	out Writer
 	hooks map[Level][]Hook
 }
 
 
 func (l *logger) Add(hook Hook) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
 	for _, level := range hook.Levels() {
 		l.hooks[level] = append(l.hooks[level], hook)
 	}
 }
 
-func (l *logger) Error(e *element)  {
-	l.output(ErrorLevel, e)
+func (l *logger) Log(e Element) {
+	n, err := l.output(e)
+	if err != nil {
+		l.out.OnError(n, err)
+	}
 }
 
-func (l *logger) Warn(e *element)  {
-	l.output(WarnLevel, e)
+func (l *logger) Panic(e Element) {
+	e.SetLevel(PanicLevel)
+	n, err := l.output(e)
+	if err != nil {
+		l.out.OnError(n, err)
+	}
+	panic(e.String())
 }
 
-func (l *logger) Info(e *element)  {
-	l.output(InfoLevel, e)
-}
-
-func (l *logger) Debug(e *element)  {
-	l.output(DebugLevel, e)
-}
-
-
-func (l *logger) Fatal(v ...interface{})  {
-	e := E()
-	e.Msg(v...)
-	l.output(FatalLevel, e)
+func (l *logger) Fatal(e Element) {
+	e.SetLevel(FatalLevel)
+	n, err := l.output(e)
+	if err != nil {
+		l.out.OnError(n, err)
+	}
 	os.Exit(1)
 }
 
-func (l *logger) Fatalln(v ...interface{})  {
-	e := E()
-	e.Msg(v...)
-	l.output(FatalLevel, e)
-	os.Exit(1)
-}
 
-func (l *logger) Fatalf(format string, v ...interface{})  {
-}
-
-func (l *logger) Panic(v ...interface{})  {
-}
-
-func (l *logger) Panicln(v ...interface{})  {
-}
-
-func (l *logger) Panicf(format string, v ...interface{})  {
-}
-
-func (l *logger) Print(v ...interface{})  {
-}
-
-func (l *logger) Println(v ...interface{})  {
-}
-
-func (l *logger) Printf(format string, v ...interface{})  {
-}
-
-func (l *logger) output(lvl Level, e *element) {
-	retryTimes := 5
-	for !atomic.CompareAndSwapUint64(&l.x, l.x, l.x + uint64(1)) {
-		retryTimes --
-		if retryTimes < 0 {
-			l.mu.Lock()
-			e.now()
-			l.mu.Unlock()
-			break
-		}
-	}
-	if e.dateTime.IsZero() {
-		e.now()
-	}
-	// do write
-	if l.level.LTE(lvl) {
-		_, err := l.w.Write(l.w.Format(e))
-		if err != nil && l.w.OnError != nil {
-			l.w.OnError(err)
-		}
+func (l *logger) output(e Element) (int64, error) {
+	buf := getBuffer()
+	defer putBuffer(buf)
+	buf.ReadFrom(bytes.NewReader(e.Bytes()))
+	n, err := buf.WriteTo(l.out)
+	if err != nil {
+		return n, err
 	}
 	// hook
-	go l.fire(lvl, e)
+	go l.fire(e)
+	return n, nil
 }
 
-func (l *logger) fire(level Level, e *element) error {
-	for _, hook := range l.hooks[level] {
-		if err := hook.Fire(e); err != nil {
-			return err
+func (l *logger) fire(e Element) {
+	for _, hook := range l.hooks[e.Level()] {
+		if hook.IsAsyncFire() {
+			go func(l *logger, hook Hook) {
+				if err := hook.Fire(e); err != nil {
+					hook.OnError(err)
+				}
+			}(l, hook)
+		} else {
+			if err := hook.Fire(e); err != nil {
+				hook.OnError(err)
+			}
 		}
 	}
-	return nil
 }
