@@ -22,10 +22,23 @@ type logger struct {
 	hooks map[Level][]Hook
 }
 
+func (l *logger) SetNoLock() {
+	l.mu = nil
+}
+
+func (l *logger) SetLock() {
+	l.mu = new(sync.Mutex)
+}
 
 func (l *logger) Add(hook Hook) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	if l.mu != nil {
+		l.mu.Lock()
+	}
+	defer func(l *logger) {
+		if l.mu != nil {
+			l.mu.Unlock()
+		}
+	}(l)
 	for _, level := range hook.Levels() {
 		l.hooks[level] = append(l.hooks[level], hook)
 	}
@@ -58,6 +71,14 @@ func (l *logger) Fatal(e Element) {
 
 
 func (l *logger) output(e Element) (int64, error) {
+	if l.mu != nil {
+		l.mu.Lock()
+	}
+	defer func(l *logger) {
+		if l.mu != nil {
+			l.mu.Unlock()
+		}
+	}(l)
 	buf := getBuffer()
 	defer putBuffer(buf)
 	buf.ReadFrom(bytes.NewReader(e.Bytes()))
