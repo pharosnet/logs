@@ -51,7 +51,9 @@ func newElement(level Level, format string, v ...interface{}) *element {
 }
 
 // TODO
+// [{LEVEL}][{TIME}][{MSG}][{EXTRA}][{CALLER}]
 func ParseElement(p []byte) (Element, error) {
+
 	return nil, nil
 }
 
@@ -141,6 +143,7 @@ func (e element) JSON() string {
 		ej.Func = e.c.fn
 	}
 	if len(e.extra) > 0 {
+		ej.Extra = Extra{}
 		for k, v := range e.extra {
 			ej.Extra[fmt.Sprint(k)] = v
 		}
