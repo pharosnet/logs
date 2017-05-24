@@ -59,7 +59,7 @@ func (e *element) Level() Level {
 	return e.level
 }
 
-func (e *element) Trace() *element {
+func (e *element) Trace() Element {
 	pc, _, line, ok := runtime.Caller(1)
 	c := caller{}
 	if  ok {
@@ -71,7 +71,7 @@ func (e *element) Trace() *element {
 	return e
 }
 
-func (e *element) TraceFile() *element {
+func (e *element) TraceFile() Element {
 	_, f, line, ok := runtime.Caller(1)
 	c := caller{}
 	if  ok {
@@ -83,36 +83,38 @@ func (e *element) TraceFile() *element {
 	return e
 }
 
-func (e *element) WithField(k, v interface{}) *element {
+func (e *element) WithField(k, v interface{}) Element {
 	e.extra[k] = v
 	return e
 }
 
-// {LEVEL}{TIME}{MSG}{EXTRA}{CALLER}
+// [{LEVEL}][{TIME}][{MSG}][{EXTRA}][{CALLER}]
 func (e *element) Bytes() []byte {
 	buf := bytes.NewBufferString("")
 	// level
 	if !e.level.IsNoLevel() {
-		buf.WriteString(fmt.Sprintf("[\x1b[%dm%s\x1b[0m] ", e.level.Color(), e.level.String()))
-		buf.WriteString(" ")
+		buf.WriteString(fmt.Sprintf("[\x1b[%dm%s\x1b[0m]", e.level.Color(), e.level.String()))
 	}
 	// datetime
 	buf.WriteString(fmt.Sprintf("[\x1b[%dm%s\x1b[0m]", 37, e.dateTime.String())) // 36
 	// msg
-	buf.WriteString(" ")
+	buf.WriteString("[")
 	buf.WriteString(e.msg)
+	buf.WriteString("]")
 	// extra
 	if len(e.extra) > 0 {
+		buf.WriteString("[")
 		for k, v := range e.extra {
-			buf.WriteString(" ")
-			buf.WriteString(fmt.Sprintf("\x1b[%dm%s\x1b[0m=", e.level.Color(), k))
-			buf.WriteString(fmt.Sprintf("\x1b[%dm%s\x1b[0m=", 37,"="))
+			buf.WriteString("{")
+			buf.WriteString(fmt.Sprintf("\x1b[%dm%s\x1b[0m", e.level.Color(), k))
+			buf.WriteString(fmt.Sprintf("\x1b[%dm%s\x1b[0m", 37, "="))
 			buf.WriteString(fmt.Sprint(v))
+			buf.WriteString("}")
 		}
 	}
+	buf.WriteString("]")
 	// caller
 	if e.c.ok {
-		buf.WriteString(" ")
 		buf.WriteString(e.c.String())
 	}
 	return buf.Bytes()
@@ -151,7 +153,7 @@ func (e element) JSON() string {
 }
 
 func (e element) Val() E {
-	ej := new(E)
+	ej := E{}
 	ej.DateTime = e.dateTime
 	if !e.level.IsNoLevel() {
 		ej.Level = e.level.String()
@@ -168,6 +170,11 @@ func (e element) Val() E {
 		}
 	}
 	return ej
+}
+
+func (e *element) SetLevel(level Level) Element {
+	e.level = level
+	return e
 }
 
 type Extra map[string]interface{}

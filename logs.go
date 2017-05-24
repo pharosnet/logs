@@ -2,6 +2,7 @@ package logs
 
 type Element interface {
 	Level() Level
+	SetLevel(Level) Element
 	Bytes() []byte
 	String() string
 	JSON() string

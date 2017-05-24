@@ -3,7 +3,7 @@ package logs
 import (
 	"sync"
 	"bytes"
-	"log"
+	"os"
 )
 
 func New(out Writer) *logger {
@@ -38,8 +38,26 @@ func (l *logger) Log(e Element) {
 	}
 }
 
+func (l *logger) Panic(e Element) {
+	e.SetLevel(PanicLevel)
+	n, err := l.output(e)
+	if err != nil {
+		l.out.OnError(n, err)
+	}
+	panic(e.String())
+}
 
-func (l *logger) output(e Element) (int, error) {
+func (l *logger) Fatal(e Element) {
+	e.SetLevel(FatalLevel)
+	n, err := l.output(e)
+	if err != nil {
+		l.out.OnError(n, err)
+	}
+	os.Exit(1)
+}
+
+
+func (l *logger) output(e Element) (int64, error) {
 	buf := getBuffer()
 	defer putBuffer(buf)
 	buf.ReadFrom(bytes.NewReader(e.Bytes()))
@@ -59,7 +77,7 @@ func (l *logger) fire(e Element) {
 				if err := hook.Fire(e); err != nil {
 					hook.OnError(err)
 				}
-			}(l)
+			}(l, hook)
 		} else {
 			if err := hook.Fire(e); err != nil {
 				hook.OnError(err)

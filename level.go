@@ -36,7 +36,7 @@ func (level Level) Color() int {
 	var levelColor int
 	switch level {
 	case DebugLevel:
-		levelColor = 37
+		levelColor = 36
 	case InfoLevel:
 		levelColor = 34
 	case WarnLevel:
@@ -44,7 +44,7 @@ func (level Level) Color() int {
 	case ErrorLevel:
 		levelColor = 31
 	case FatalLevel:
-		levelColor = 40
+		levelColor = 45
 	case PanicLevel:
 		levelColor = 35
 	default:
@@ -87,7 +87,7 @@ func ParseLevel(lvl string) (Level, error) {
 	case "DEBUG":
 		return DebugLevel, nil
 	}
-	return Level{}, fmt.Errorf("not a valid Level: %q", lvl)
+	return NoLevel, fmt.Errorf("not a valid Level: %q", lvl)
 }
 
 

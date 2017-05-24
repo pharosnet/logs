@@ -5,11 +5,11 @@ import (
 	"os"
 )
 
-type ErrorHandle func(int, error)
+type ErrorHandle func(int64, error)
 
 type Writer interface {
 	io.Writer
-	OnError(int, error)
+	OnError(int64, error)
 }
 
 // SimpleWriter <- file
@@ -18,16 +18,16 @@ func NewSimpleWriter(out io.Writer, newline bool, errorHandle ErrorHandle) *simp
 	w.onError = errorHandle
 	w.out = out
 	w.newline = newline
-	return
+	return w
 }
 
 type simpleWriter struct {
 	newline bool
 	out io.Writer
-	onError func(int, error)
+	onError ErrorHandle
 }
 
-func (w *simpleWriter) OnError(n int, err error)  {
+func (w *simpleWriter) OnError(n int64, err error)  {
 	if w.onError != nil {
 		w.onError(n, err)
 	}
@@ -45,15 +45,15 @@ func NewStdoutWriter(errorHandle ErrorHandle) *stdoutWriter {
 	w := new(stdoutWriter)
 	w.onError = errorHandle
 	w.out = os.Stdout
-	return
+	return w
 }
 
 type stdoutWriter struct {
 	out io.Writer
-	onError func(int, error)
+	onError ErrorHandle
 }
 
-func (w *stdoutWriter) OnError(n int, err error)  {
+func (w *stdoutWriter) OnError(n int64, err error)  {
 	if w.onError != nil {
 		w.onError(n, err)
 	}
@@ -74,12 +74,12 @@ func (w *LogWrappedWriter) Write(p []byte) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	e, parseErr := parseElement(msg)
+	e, parseErr := ParseElement(msg)
 	if parseErr != nil {
 		return 0, parseErr
 	}
 	if newLine {
-		return w.out.Write(e.bytesWithNewLine())
+		return w.out.Write(append(e.Bytes(), '\n'))
 	}
 	return w.out.Write(e.Bytes())
 }
