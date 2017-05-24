@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"runtime"
 	"encoding/json"
+	"strings"
+	"strconv"
 )
 
 
@@ -52,9 +54,116 @@ func newElement(level Level, format string, v ...interface{}) *element {
 
 // TODO
 // [{LEVEL}][{TIME}][{MSG}][{EXTRA}][{CALLER}]
-func ParseElement(p []byte) (Element, error) {
+func ParseElement(content []byte) (Element, error) {
+	level := ""
+	datetime := ""
+	msg := ""
+	extra := ""
+	call := ""
+	for i := 0 ; i < len(content) ; i ++ {
+		b := content[i]
+		if b == 91 {
+			if level == "" {
+				for {
+					i ++
+					b = content[i]
+					if b == 93 {
+						break
+					}
+					level = level + string(b)
+				}
+				continue
+			}
+			if datetime == "" {
+				for {
+					i ++
+					b = content[i]
+					if b == 93 {
+						break
+					}
+					datetime = datetime + string(b)
+				}
+				continue
+			}
+			if msg == "" {
+				for {
+					i ++
+					b = content[i]
+					if b == 93  {
+						j := i
+						if content[j + 1] == 91 && content[j + 2] == 123 {
+							break
+						}
 
-	return nil, nil
+					}
+					msg = msg + string(b)
+				}
+				continue
+			}
+			if extra == "" {
+				for {
+					i ++
+					b = content[i]
+					if b == 93  {
+						j := i
+						if content[j - 1] == 125 {
+							break
+						}
+					}
+					extra = extra + string(b)
+				}
+				continue
+			}
+			if call == "" {
+				for {
+					i ++
+					b = content[i]
+					if b == 93  {
+						break
+					}
+					call = call + string(b)
+				}
+				continue
+			}
+		}
+	}
+	e := new(element)
+	lvl, lvlErr := ParseLevel(level)
+	if lvlErr != nil {
+		return nil, lvlErr
+	}
+	e.level = lvl
+	date, dateErr := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", datetime)
+	if dateErr != nil {
+		return nil, dateErr
+	}
+	e.dateTime = date
+	e.msg = msg
+	if extra != "" { // {k=v}
+		e.extra = Extra{}
+		extra = extra[1:len(extra)-1]
+		items := strings.Split(extra, "}{")
+		for _, item := range items {
+			kv := strings.Split(item, "=")
+			e.extra[kv[0]] = kv[1]
+		}
+	}
+	if call != "" { // /Users/doaman/workspace/projects/pharosnet/src/github.com/pharosnet/test/logs_std.go:16
+		e.c = caller{}
+		items := strings.Split(call, ":")
+		if items[0][0] == '/' {
+			e.c.file = items[0]
+		} else {
+			e.c.fn = items[0]
+		}
+		line, err := strconv.Atoi(items[1])
+		if err != nil {
+			return nil, err
+		}
+		e.c.line = line
+		e.c.ok = true
+	}
+	return e, nil
 }
 
 func (e *element) Level() Level {
