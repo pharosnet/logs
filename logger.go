@@ -93,7 +93,7 @@ func (l *logger) output(e Element) (int64, error) {
 
 func (l *logger) fire(e Element) {
 	if len(l.hooks) == 0 {
-		return 
+		return
 	}
 	for _, hook := range l.hooks[e.Level()] {
 		if hook.IsAsyncFire() {
