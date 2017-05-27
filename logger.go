@@ -87,11 +87,14 @@ func (l *logger) output(e Element) (int64, error) {
 		return n, err
 	}
 	// hook
-	go l.fire(e)
+	l.fire(e)
 	return n, nil
 }
 
 func (l *logger) fire(e Element) {
+	if len(l.hooks) == 0 {
+		return 
+	}
 	for _, hook := range l.hooks[e.Level()] {
 		if hook.IsAsyncFire() {
 			go func(l *logger, hook Hook) {
