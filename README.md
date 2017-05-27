@@ -18,12 +18,12 @@ import (
 
 func main() {
 	loggers := logs.New(logs.NewStdoutWriter(nil))
-	loggers.Log(logs.Debugf("msg level : %s", "debug").WithField("k1","v1").WithField("k2", 2).Trace())
-	loggers.Log(logs.Infof("msg level : %s", "info").WithField("k1","v1").WithField("k2", 2))
-	loggers.Log(logs.Warnf("msg level : %v", "warn").WithField("k1","v1").WithField("k2", 2))
-	loggers.Log(logs.Errorf("msg level : %v", "error").WithField("k1","v1").WithField("k2", 2).TraceFile())
-	loggers.Panic(logs.Errorf("msg level : %v", "panic, it will call panic(logs.Element) and swap level with PanicLevel.").WithField("k1","v1").WithField("k2", 2).TraceFile())
-	loggers.Fatal(logs.Errorf("msg level : %v", "fatal, it will call os.Exit(1) and swap level with FatalLevel.").WithField("k1","v1").WithField("k2", 2).TraceFile())
+	loggers.Log(logs.Debugf("msg level : %s", "debug").AddFields(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFileWithoutGoPath())
+	loggers.Log(logs.Infof("msg level : %s", "info").AddFields(logs.F{"k1", "v1"}, logs.F{"k2", 2}).Trace())
+	loggers.Log(logs.Warnf("msg level : %v", "warn").AddFields(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
+	loggers.Log(logs.Errorf("msg level : %v", "error").AddFields(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFile())
+	loggers.Panic(logs.Errorf("msg level : %v", "panic, it will call panic(logs.Element) and swap level with PanicLevel.").AddFields(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
+	loggers.Fatal(logs.Errorf("msg level : %v", "fatal, it will call os.Exit(1) and swap level with FatalLevel.").AddFields(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
 }
 
 ```
@@ -41,7 +41,7 @@ import (
 
 func main() {
     logger := log.New(os.Stdout, "", 0) // prefix must be empty, and flag must be zero. in future, prefix and flag can be used.
-	logger.Println(logs.Infof("msg %s", "some message").WithField("k1","v1").WithField("k2", 2).TraceFile())
+	logger.Println(logs.Infof("msg %s", "some message").AddFields(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFile())
 }
 
 ```

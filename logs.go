@@ -8,8 +8,14 @@ type Element interface {
 	JSON() string
 	Trace() Element
 	TraceFile() Element
-	WithField(interface{}, interface{}) Element
+	TraceFileWithoutGoPath() Element
+	AddFields(...F) Element
 	Val() E
+}
+
+type F struct {
+	K string
+	V interface{}
 }
 
 type Log interface {
