@@ -1,98 +1,69 @@
 package logs
 
 import (
-	"sync"
-	"bytes"
 	"os"
 )
 
-func New(out Writer) *logger {
+func New(level Level, out Writer) *logger {
 	log := new(logger)
-	log.mu = new(sync.Mutex)
-	log.x = uint64(0)
+	log.level = level
 	log.out = out
 	log.hooks = make(map[Level][]Hook)
 	return log
 }
 
+func NewWithHooks(level Level, out Writer, hooks []Hook) *logger {
+	log := New(level, out)
+	for _, hook := range hooks {
+		log.addHook(hook)
+	}
+	return log
+}
+
 type logger struct {
-	mu *sync.Mutex
-	x uint64
+	level Level
 	out Writer
 	hooks map[Level][]Hook
 }
 
-func (l *logger) SetNoLock() {
-	l.mu = nil
-}
 
-func (l *logger) SetLock() {
-	l.mu = new(sync.Mutex)
-}
-
-func (l *logger) Add(hook Hook) {
-	if l.mu != nil {
-		l.mu.Lock()
-	}
-	defer func(l *logger) {
-		if l.mu != nil {
-			l.mu.Unlock()
-		}
-	}(l)
+func (l *logger) addHook(hook Hook) {
 	for _, level := range hook.Levels() {
 		l.hooks[level] = append(l.hooks[level], hook)
 	}
 }
 
 func (l *logger) Log(e Element) {
-	n, err := l.output(e)
-	if err != nil {
-		l.out.OnError(n, err)
+	if !e.Level().LTE(l.level) {
+		return
 	}
+	l.output(e)
 }
 
 func (l *logger) Panic(e Element) {
-	e.SetLevel(PanicLevel)
-	n, err := l.output(e)
-	if err != nil {
-		l.out.OnError(n, err)
+	if !e.Level().LTE(l.level) {
+		return
 	}
+	l.output(e)
 	panic(e.String())
 }
 
 func (l *logger) Fatal(e Element) {
-	e.SetLevel(FatalLevel)
-	n, err := l.output(e)
-	if err != nil {
-		l.out.OnError(n, err)
+	if !e.Level().LTE(l.level) {
+		return
 	}
+	l.output(e)
 	os.Exit(1)
 }
 
 
-func (l *logger) output(e Element) (int64, error) {
-	if l.mu != nil {
-		l.mu.Lock()
-	}
-	defer func(l *logger) {
-		if l.mu != nil {
-			l.mu.Unlock()
-		}
-	}(l)
-	buf := getBuffer()
-	defer putBuffer(buf)
-	buf.ReadFrom(bytes.NewReader(e.Bytes()))
-	n, err := buf.WriteTo(l.out)
-	if err != nil {
-		return n, err
-	}
-	// hook
+func (l *logger) output(e Element)  {
+	l.out.Writer(e)
 	l.fire(e)
-	return n, nil
 }
 
 func (l *logger) fire(e Element) {
-	if len(l.hooks) == 0 {
+	if l.hooks == nil || len(l.hooks) == 0 {
 		return
 	}
 	for _, hook := range l.hooks[e.Level()] {

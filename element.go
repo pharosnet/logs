@@ -223,7 +223,7 @@ func (e *element) TraceFileWithoutGoPath() Element {
 	return e
 }
 
-func (e *element) AddFields(fields ...F) Element {
+func (e *element) Extra(fields ...F) Element {
 	for _, field := range fields {
 		e.extra[field.K] = field.V
 	}
