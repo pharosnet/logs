@@ -25,6 +25,13 @@ func (level Level) LTE(lvl Level) bool {
 	return false
 }
 
+func (level Level) LT(lvl Level) bool {
+	if level < lvl {
+		return true
+	}
+	return false
+}
+
 func (level Level) IsNoLevel() bool {
 	if level == NoLevel {
 		return true

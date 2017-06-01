@@ -2,14 +2,13 @@ package logs
 
 type Element interface {
 	Level() Level
-	SetLevel(Level) Element
 	Bytes() []byte
 	String() string
 	JSON() string
 	Trace() Element
 	TraceFile() Element
 	TraceFileWithoutGoPath() Element
-	AddFields(...F) Element
+	Extra(...F) Element
 	Val() E
 }
 
