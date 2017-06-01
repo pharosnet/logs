@@ -40,14 +40,14 @@ import (
 
 func main() {
     w := logs.NewAsyncByteBufferWriter(os.Stdout, nil, 64)
-	loggers := logs.New(logs.DebugLevel, w)
-	defer w.Flush()
-	loggers.Log(logs.Debugf("msg level : %s", "debug").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFileWithoutGoPath())
-	loggers.Log(logs.Infof("msg level : %s", "info").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}).Trace())
-	loggers.Log(logs.Warnf("msg level : %v", "warn").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
-	loggers.Log(logs.Errorf("msg level : %v", "error").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFile())
-	loggers.Panic(logs.Errorf("msg level : %v", "panic, it will call panic(logs.Element) and swap level with PanicLevel.").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
-	loggers.Fatal(logs.Errorf("msg level : %v", "fatal, it will call os.Exit(1) and swap level with FatalLevel.").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
+    loggers := logs.New(logs.DebugLevel, w)
+    defer w.Flush()
+    loggers.Log(logs.Debugf("msg level : %s", "debug").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFileWithoutGoPath())
+    loggers.Log(logs.Infof("msg level : %s", "info").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}).Trace())
+    loggers.Log(logs.Warnf("msg level : %v", "warn").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
+    loggers.Log(logs.Errorf("msg level : %v", "error").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFile())
+    loggers.Panic(logs.Errorf("msg level : %v", "panic, it will call panic(logs.Element) and swap level with PanicLevel.").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
+    loggers.Fatal(logs.Errorf("msg level : %v", "fatal, it will call os.Exit(1) and swap level with FatalLevel.").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}))
 }
 
 ```
@@ -60,12 +60,12 @@ package main
 import (
     "log"
     "os"
-	"github.com/pharosnet/logs"
+    "github.com/pharosnet/logs"
 )
 
 func main() {
     logger := log.New(os.Stdout, "", 0) // prefix must be empty, and flag must be zero. in future, prefix and flag can be used.
-	logger.Println(logs.Infof("msg %s", "some message").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFile())
+    logger.Println(logs.Infof("msg %s", "some message").Extra(logs.F{"k1", "v1"}, logs.F{"k2", 2}).TraceFile())
 }
 
 ```
