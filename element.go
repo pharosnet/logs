@@ -253,8 +253,8 @@ func (e *element) Bytes() []byte {
 			buf.WriteString(fmt.Sprint(v))
 			buf.WriteString("}")
 		}
+		buf.WriteString("]")
 	}
-	buf.WriteString("]")
 	// caller
 	if e.c.ok {
 		buf.WriteString(e.c.String())
