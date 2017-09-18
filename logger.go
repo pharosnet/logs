@@ -2,10 +2,12 @@ package logs
 
 import (
 	"os"
+	"sync"
 )
 
 func New(level Level, out Writer) *logger {
 	log := new(logger)
+	log.mu = new(sync.Mutex)
 	log.level = level
 	log.out = out
 	log.hooks = make(map[Level][]Hook)
@@ -21,6 +23,7 @@ func NewWithHooks(level Level, out Writer, hooks []Hook) *logger {
 }
 
 type logger struct {
+	mu *sync.Mutex
 	level Level
 	out Writer
 	hooks map[Level][]Hook
@@ -58,6 +61,8 @@ func (l *logger) Fatal(e Element) {
 
 
 func (l *logger) output(e Element)  {
+	l.mu.Lock()
+	defer l.mu.Unlock()
 	l.out.Writer(e)
 	l.fire(e)
 }

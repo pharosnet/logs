@@ -5,9 +5,9 @@ type Element interface {
 	Bytes() []byte
 	String() string
 	JSON() string
-	Trace() Element
-	TraceFile() Element
-	TraceFileWithoutGoPath() Element
+	CallFunc() Element
+	CallFileWithGoPath() Element
+	CallFile() Element
 	Extra(...F) Element
 	Val() E
 }
@@ -38,6 +38,16 @@ func Debug( v ...interface{}) Element {
 
 func Debugf(format string, v ...interface{}) Element {
 	e := newElement(DebugLevel, format, v...)
+	return e
+}
+
+func Trace(v ...interface{}) Element {
+	e := newElement(TraceLevel, "", v...)
+	return e
+}
+
+func Tracef(format string, v ...interface{}) Element {
+	e := newElement(TraceLevel, format, v...)
 	return e
 }
 
