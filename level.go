@@ -13,7 +13,7 @@ const (
 	WarnLevel
 	InfoLevel
 	DebugLevel
-
+	TraceLevel
 )
 
 type Level uint32
@@ -42,6 +42,8 @@ func (level Level) IsNoLevel() bool {
 func (level Level) Color() int {
 	var levelColor int
 	switch level {
+	case TraceLevel:
+		levelColor = 32
 	case DebugLevel:
 		levelColor = 36
 	case InfoLevel:
@@ -63,12 +65,14 @@ func (level Level) Color() int {
 
 func (level Level) String() string {
 	switch level {
+	case TraceLevel:
+		return "TRACE"
 	case DebugLevel:
 		return "DEBUG"
 	case InfoLevel:
-		return "INFO"
+		return "INFO "
 	case WarnLevel:
-		return "WARN"
+		return "WARN "
 	case ErrorLevel:
 		return "ERROR"
 	case FatalLevel:
@@ -76,11 +80,11 @@ func (level Level) String() string {
 	case PanicLevel:
 		return "PANIC"
 	}
-	return "UNKNOWN"
+	return "     "
 }
 
 func ParseLevel(lvl string) (Level, error) {
-	switch strings.ToUpper(lvl) {
+	switch strings.TrimSpace(strings.ToUpper(lvl)) {
 	case "PANIC":
 		return PanicLevel, nil
 	case "FATAL":
@@ -93,6 +97,8 @@ func ParseLevel(lvl string) (Level, error) {
 		return InfoLevel, nil
 	case "DEBUG":
 		return DebugLevel, nil
+	case "TRACE ":
+		return TraceLevel, nil
 	}
 	return NoLevel, fmt.Errorf("not a valid Level: %q", lvl)
 }

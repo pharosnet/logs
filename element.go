@@ -34,7 +34,7 @@ func (c caller) String() string {
 		if c.file == "" {
 			return fmt.Sprintf("[\x1b[%dm%s:%d\x1b[0m]", 36, c.fn, c.line)
 		}
-		return fmt.Sprintf("[\x1b[%dm%s:%s:%d\x1b[0m]", 36, c.file, c.fn, c.line)
+		return fmt.Sprintf("[\x1b[%dm%s:%d\x1b[0m]", 36, c.file, c.line)
 	}
 	return ""
 }
@@ -157,7 +157,7 @@ func ParseElement(content []byte) (Element, error) {
 			e.extra[kv[0]] = kv[1]
 		}
 	}
-	if call != "" { // /Users/doaman/workspace/projects/pharosnet/src/github.com/pharosnet/test/logs_std.go:func_name:16
+	if call != "" {
 		e.c = caller{}
 		items := strings.Split(call, ":")
 		if len(items) == 3 {
@@ -185,7 +185,7 @@ func (e *element) Level() Level {
 	return e.level
 }
 
-func (e *element) Trace() Element {
+func (e *element) CallFunc() Element {
 	pc, _, line, ok := runtime.Caller(1)
 	c := caller{}
 	if  ok {
@@ -197,7 +197,7 @@ func (e *element) Trace() Element {
 	return e
 }
 
-func (e *element) TraceFile() Element {
+func (e *element) CallFileWithGoPath() Element {
 	pc, f, line, ok := runtime.Caller(1)
 	c := caller{}
 	if  ok {
@@ -210,7 +210,7 @@ func (e *element) TraceFile() Element {
 	return e
 }
 
-func (e *element) TraceFileWithoutGoPath() Element {
+func (e *element) CallFile() Element {
 	pc, f, line, ok := runtime.Caller(1)
 	c := caller{}
 	if  ok {
