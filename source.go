@@ -5,7 +5,7 @@ import "context"
 type Source interface {
 	Name() string
 	Level() Level
-	Put(formatter string, args []interface{}) error
+	Put(lv Level, formatter string, args []interface{}) error
 	Close(ctx context.Context) error
 }
 
@@ -28,8 +28,8 @@ func (s *standardSource) Level() Level {
 	return s.lv
 }
 
-func (s *standardSource) Put(formatter string, args []interface{}) error {
-	return s.ch.Send(pack(s.lv, formatter, args))
+func (s *standardSource) Put(lv Level, formatter string, args []interface{}) error {
+		return s.ch.Send(pack(lv, formatter, args))
 }
 
 func (s *standardSource) Close(ctx context.Context) error {

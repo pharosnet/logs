@@ -1,14 +1,16 @@
 package logs
 
 import (
+	"fmt"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
 
 const (
-	skip = 3
+	skip = 5
 	depth = 1
 	unknown = "unknown"
 )
@@ -49,7 +51,14 @@ func pack(lv Level, formatter string, args []interface{}) *Packet {
 }
 
 func currentGoruntineId() int64 {
-	return 0
+	var buf [64]byte
+	n := runtime.Stack(buf[:], false)
+	idField := strings.Fields(strings.TrimPrefix(string(buf[:n]), "goroutine "))[0]
+	goroutineId, err := strconv.Atoi(idField)
+	if err != nil {
+		panic( fmt.Sprintf("cannot get goroutine id: %v", err) )
+	}
+	return int64(goroutineId)
 }
 
 func callers() uintptr {

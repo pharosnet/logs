@@ -40,8 +40,8 @@ func (l *standardLogger) Errorf(formatter string, args ...interface{}) {
 		return
 	}
 	for _, s := range l.sources {
-		if s.Level().LTE(ErrorLevel) {
-			s.Put(formatter, args)
+		if s.Level().GTE(ErrorLevel) {
+			s.Put(ErrorLevel, formatter, args)
 		}
 	}
 }
@@ -51,8 +51,8 @@ func (l *standardLogger) Error(args ...interface{}) {
 		return
 	}
 	for _, s := range l.sources {
-		if s.Level().LTE(ErrorLevel) {
-			s.Put(argsToFmt(args), args)
+		if s.Level().GTE(ErrorLevel) {
+			s.Put(ErrorLevel, argsToFmt(args), args)
 		}
 	}
 }
@@ -62,8 +62,8 @@ func (l *standardLogger) Warnf(formatter string, args ...interface{}) {
 		return
 	}
 	for _, s := range l.sources {
-		if s.Level().LTE(WarnLevel) {
-			s.Put(formatter, args)
+		if s.Level().GTE(WarnLevel) {
+			s.Put(WarnLevel, formatter, args)
 		}
 	}
 }
@@ -73,8 +73,8 @@ func (l *standardLogger) Warn(args ...interface{}) {
 		return
 	}
 	for _, s := range l.sources {
-		if s.Level().LTE(WarnLevel) {
-			s.Put(argsToFmt(args), args)
+		if s.Level().GTE(WarnLevel) {
+			s.Put(WarnLevel, argsToFmt(args), args)
 		}
 	}
 }
@@ -84,8 +84,8 @@ func (l *standardLogger) Infof(formatter string, args ...interface{}) {
 		return
 	}
 	for _, s := range l.sources {
-		if s.Level().LTE(InfoLevel) {
-			s.Put(formatter, args)
+		if s.Level().GTE(InfoLevel) {
+			s.Put(InfoLevel, formatter, args)
 		}
 	}
 }
@@ -95,8 +95,8 @@ func (l *standardLogger) Info(args ...interface{}) {
 		return
 	}
 	for _, s := range l.sources {
-		if s.Level().LTE(InfoLevel) {
-			s.Put(argsToFmt(args), args)
+		if s.Level().GTE(InfoLevel) {
+			s.Put(InfoLevel, argsToFmt(args), args)
 		}
 	}
 }
@@ -106,8 +106,8 @@ func (l *standardLogger) Debugf(formatter string, args ...interface{}) {
 		return
 	}
 	for _, s := range l.sources {
-		if s.Level().LTE(DebugLevel) {
-			s.Put(formatter, args)
+		if s.Level().GTE(DebugLevel) {
+			s.Put(DebugLevel, formatter, args)
 		}
 	}
 }
@@ -117,8 +117,8 @@ func (l *standardLogger) Debug(args ...interface{}) {
 		return
 	}
 	for _, s := range l.sources {
-		if s.Level().LTE(DebugLevel) {
-			s.Put(argsToFmt(args), args)
+		if s.Level().GTE(DebugLevel) {
+			s.Put(DebugLevel, argsToFmt(args), args)
 		}
 	}
 }

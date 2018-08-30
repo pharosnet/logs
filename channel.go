@@ -59,11 +59,14 @@ func (c *flyChannel) Recv() (*Packet, bool) {
 }
 
 func (c *flyChannel) Close(ctx context.Context) error {
-	c.buffer.Sync(ctx)
 	bufCloseErr := c.buffer.Close()
+	bufSyncErr := c.buffer.Sync(ctx)
 	sinkCloseErr := c.sink.Close(ctx)
 	if bufCloseErr != nil {
 		return bufCloseErr
+	}
+	if bufSyncErr != nil {
+		return bufSyncErr
 	}
 	if sinkCloseErr != nil {
 		return sinkCloseErr

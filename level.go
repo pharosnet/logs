@@ -9,6 +9,13 @@ const (
 
 type Level uint32
 
+func (l Level) EQ(lv Level) bool {
+	if l == lv {
+		return true
+	}
+	return false
+}
+
 func (l Level) LTE(lv Level) bool {
 	if l <= lv {
 		return true
@@ -23,13 +30,27 @@ func (l Level) LT(lv Level) bool {
 	return false
 }
 
+func (l Level) GTE(lv Level) bool {
+	if l >= lv {
+		return true
+	}
+	return false
+}
+
+func (l Level) GT(lv Level) bool {
+	if l > lv {
+		return true
+	}
+	return false
+}
+
 func (l Level) Color() int {
 	var levelColor int
 	switch l {
 	case DebugLevel:
-		levelColor = 36
+		levelColor = 32
 	case InfoLevel:
-		levelColor = 34
+		levelColor = 36
 	case WarnLevel:
 		levelColor = 33
 	case ErrorLevel:
