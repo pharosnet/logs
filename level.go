@@ -1,106 +1,78 @@
 package logs
 
-import (
-	"strings"
-	"fmt"
-)
-
 const (
-	NoLevel Level = iota
-	PanicLevel
-	FatalLevel
-	ErrorLevel
+	ErrorLevel = iota
 	WarnLevel
 	InfoLevel
 	DebugLevel
-	TraceLevel
 )
 
 type Level uint32
 
-func (level Level) LTE(lvl Level) bool {
-	if level <= lvl {
+func (l Level) EQ(lv Level) bool {
+	if l == lv {
 		return true
 	}
 	return false
 }
 
-func (level Level) LT(lvl Level) bool {
-	if level < lvl {
+func (l Level) LTE(lv Level) bool {
+	if l <= lv {
 		return true
 	}
 	return false
 }
 
-func (level Level) IsNoLevel() bool {
-	if level == NoLevel {
+func (l Level) LT(lv Level) bool {
+	if l < lv {
 		return true
 	}
 	return false
 }
 
-func (level Level) Color() int {
+func (l Level) GTE(lv Level) bool {
+	if l >= lv {
+		return true
+	}
+	return false
+}
+
+func (l Level) GT(lv Level) bool {
+	if l > lv {
+		return true
+	}
+	return false
+}
+
+func (l Level) Color() int {
 	var levelColor int
-	switch level {
-	case TraceLevel:
-		levelColor = 32
+	switch l {
 	case DebugLevel:
-		levelColor = 36
+		levelColor = 32
 	case InfoLevel:
-		levelColor = 34
+		levelColor = 36
 	case WarnLevel:
 		levelColor = 33
 	case ErrorLevel:
 		levelColor = 31
-	case FatalLevel:
-		levelColor = 45
-	case PanicLevel:
-		levelColor = 35
 	default:
 		levelColor = 0
 	}
-
 	return levelColor
 }
 
-func (level Level) String() string {
-	switch level {
-	case TraceLevel:
-		return "TRACE"
+func (l Level) String() string {
+	switch l {
 	case DebugLevel:
-		return "DEBUG"
+		return "DEBU"
 	case InfoLevel:
-		return "INFO "
+		return "INFO"
 	case WarnLevel:
-		return "WARN "
+		return "WARN"
 	case ErrorLevel:
-		return "ERROR"
-	case FatalLevel:
-		return "FATAL"
-	case PanicLevel:
-		return "PANIC"
+		return "ERRO"
 	}
-	return "     "
-}
-
-func ParseLevel(lvl string) (Level, error) {
-	switch strings.TrimSpace(strings.ToUpper(lvl)) {
-	case "PANIC":
-		return PanicLevel, nil
-	case "FATAL":
-		return FatalLevel, nil
-	case "ERROR":
-		return ErrorLevel, nil
-	case "WARN":
-		return WarnLevel, nil
-	case "INFO":
-		return InfoLevel, nil
-	case "DEBUG":
-		return DebugLevel, nil
-	case "TRACE ":
-		return TraceLevel, nil
-	}
-	return NoLevel, fmt.Errorf("not a valid Level: %q", lvl)
+	return "    "
 }
 
 
