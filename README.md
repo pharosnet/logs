@@ -4,7 +4,6 @@
 * Logs is a structured logger for Go, and it itself is completely stable.
 * Nicely color-coded in development (when a TTY is attached, otherwise just
   plain text).
-* Logs can be used with the standard library logger.
 
 #### Example
 
